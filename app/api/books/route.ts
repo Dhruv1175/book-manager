@@ -14,6 +14,18 @@ export async function GET(req: NextRequest) {
     }
 }
 
+async function fetchCoverUrl(title: string, author: string): Promise<string | null> {
+    try {
+        const query = new URLSearchParams({ title, author, limit: "1" });
+        const res = await fetch(`https://openlibrary.org/search.json?${query}`);
+        const data = await res.json();
+        const coverId = data.docs?.[0]?.cover_i;
+        return coverId ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg` : null;
+    } catch {
+        return null;
+    }
+}
+
 export async function POST(req: NextRequest) {
     try{
         const {title,author,tags,status}  = await req.json();
@@ -24,8 +36,9 @@ export async function POST(req: NextRequest) {
         if (!userId) {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
+        const coverUrl = await fetchCoverUrl(title, author);
         await dbConnect();
-        const newBook = new Book({ title, author, tags, status , userId });
+        const newBook = new Book({ title, author, tags, status , userId, coverUrl });
         await newBook.save();
         return NextResponse.json({ message: "Book created successfully", book: newBook }, { status: 201 });
     }catch(err){
