@@ -1,6 +1,7 @@
 import {NextRequest, NextResponse} from "next/server";
 import Book from "@/lib/models/Book";
 import dbConnect from "@/lib/db";
+import {fetchCoverUrl} from "@/lib/coverLookUp";
 import {BookTypes} from "@/types";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -11,12 +12,26 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         if (!userId) {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
-        const updateFields: Partial<{title:string; author:string; tags:string[]; status:string}> = {};
+        const existingBook = await Book.findOne({ _id: resolvedParams.id, userId: userId });
+        if (!existingBook) {
+            return NextResponse.json({ message: "Book not found" }, { status: 404 });
+        }
+        const updateFields: Partial<{title:string; author:string; tags:string[]; status:string; coverUrl:string}> = {};
         if (body.title !== undefined) updateFields.title = body.title;
         if (body.author !== undefined) updateFields.author = body.author;
         if (body.tags !== undefined) updateFields.tags = body.tags;
         if (body.status !== undefined) updateFields.status = body.status;
+        const titleChanged = body.title !== undefined && body.title !== existingBook.title;
+        const authorChanged = body.author !== undefined && body.author !== existingBook.author;
 
+        if (titleChanged || authorChanged) {
+            const newTitle = body.title ?? existingBook.title;
+            const newAuthor = body.author ?? existingBook.author;
+            const coverUrl = await fetchCoverUrl(newTitle, newAuthor);
+            if (coverUrl !== null) {
+                updateFields.coverUrl = coverUrl;
+            }
+        }
         if (Object.keys(updateFields).length === 0) {
             return NextResponse.json({ message: "No fields provided to update" }, { status: 400 });
         }
