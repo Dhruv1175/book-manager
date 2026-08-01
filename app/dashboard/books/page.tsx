@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import DarkModeToggle from "@/components/DarkModeToggle";
 import UserProfileDropdown from "@/components/UserProfileDropDown";
+import AddBookModal from "@/components/AddBookModal";
 import { BookTypes, Status } from "@/types";
 import {
   ArrowLeft,
@@ -17,6 +18,7 @@ import {
   Trash2,
   Loader2,
   X,
+  Plus,
   Tag as TagIcon,
 } from "lucide-react";
 
@@ -26,11 +28,10 @@ const modalInputClass =
 export default function BooksPage() {
   const [books, setBooks] = useState<BookTypes[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-
   const [editingBook, setEditingBook] = useState<BookTypes | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editAuthor, setEditAuthor] = useState("");
@@ -56,6 +57,10 @@ export default function BooksPage() {
     }
     fetchBooks();
   }, []);
+
+  const handleBookAdded = (newBook: BookTypes) => {
+    setBooks((prev) => [newBook, ...prev]);
+  };
 
   const allTags = useMemo(() => {
     const tagsSet = new Set<string>();
@@ -174,7 +179,6 @@ export default function BooksPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg)] text-[var(--text-main)]">
-
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--border)] bg-[var(--bg)]/90 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-6 md:px-10 h-20 flex justify-between items-center">
           <div className="flex items-center gap-4">
@@ -196,13 +200,24 @@ export default function BooksPage() {
           </div>
         </div>
       </nav>
+
       <main className="flex-1 max-w-6xl w-full mx-auto px-6 md:px-10 pt-32 pb-24 flex flex-col gap-10">
         <section className="flex flex-col gap-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Library Books</h1>
-            <p className="text-sm text-[var(--text-main)]/60 mt-1.5">
-              Manage, filter, and track your personal reading catalog.
-            </p>
+          <div className="flex items-start sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Library Books</h1>
+              <p className="text-sm text-[var(--text-main)]/60 mt-1.5">
+                Manage, filter, and track your personal reading catalog.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsAddModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--accent)] text-white text-xs font-semibold hover:bg-[var(--accent-hover)] shadow-sm hover:shadow-md transition-all shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Book</span>
+            </button>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -247,6 +262,7 @@ export default function BooksPage() {
             </div>
           </div>
         </section>
+
         <section className="flex flex-col gap-4">
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 bg-[var(--bg-card)] p-4 rounded-2xl border border-[var(--border)]">
             <div className="flex items-center gap-1.5 overflow-x-auto pb-2 lg:pb-0 scrollbar-none">
@@ -286,6 +302,7 @@ export default function BooksPage() {
               )}
             </div>
           </div>
+
           {allTags.length > 0 && (
             <div className="flex items-start gap-2 flex-wrap text-xs">
               <span className="flex items-center gap-1.5 text-[var(--text-main)]/50 font-medium mr-1 h-7">
@@ -324,6 +341,7 @@ export default function BooksPage() {
             </div>
           )}
         </section>
+
         <section>
           {loading ? (
             <div className="flex flex-col items-center justify-center py-24 text-[var(--text-main)]/50 gap-3">
@@ -423,10 +441,22 @@ export default function BooksPage() {
               <p className="text-xs text-[var(--text-main)]/60 max-w-sm mx-auto">
                 Try clearing search filters or add a new book to your shelf.
               </p>
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[var(--accent)] text-white text-xs font-semibold shadow-sm hover:shadow-md transition-all mt-2"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add First Book
+              </button>
             </div>
           )}
         </section>
       </main>
+      <AddBookModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onBookAdded={handleBookAdded}
+      />
       {editingBook && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] shadow-2xl">
@@ -517,6 +547,7 @@ export default function BooksPage() {
           </div>
         </div>
       )}
+
       <footer className="py-8 bg-[var(--text-main)]">
         <div className="max-w-6xl mx-auto px-6 md:px-10 flex flex-col items-center gap-2">
           <div className="text-sm text-[var(--bg)]/60">

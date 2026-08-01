@@ -4,8 +4,9 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import DarkModeToggle from "@/components/DarkModeToggle";
-import { Book as BookIcon, Feather, Clock, BookOpen, Loader2 } from "lucide-react";
+import { Book as BookIcon, Feather, Clock, BookOpen, Loader2, Plus } from "lucide-react";
 import UserProfileDropdown from "@/components/UserProfileDropDown";
+import AddBookModal from "@/components/AddBookModal";
 import { BookTypes } from "@/types";
 
 async function fetchAuthorPhotoUrl(authorName: string): Promise<string | null> {
@@ -24,6 +25,7 @@ export default function DashboardPage() {
   const [books, setBooks] = useState<BookTypes[]>([]);
   const [loading, setLoading] = useState(true);
   const [authorPhotoUrl, setAuthorPhotoUrl] = useState<string | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   useEffect(() => {
     async function fetchBooks() {
@@ -41,6 +43,10 @@ export default function DashboardPage() {
     }
     fetchBooks();
   }, []);
+
+  const handleBookAdded = (newBook: BookTypes) => {
+    setBooks((prev) => [newBook, ...prev]);
+  };
 
   const getSpotlightAuthor = () => {
     if (books.length === 0) return null;
@@ -99,7 +105,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg)]">
-
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--border)] bg-[var(--bg)]/90 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-6 md:px-10 h-20 flex justify-between items-center">
           <Link href="/" className="font-bold text-xl tracking-tight text-[var(--text-main)]">
@@ -128,10 +133,8 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-14">
-
             {spotlightAuthor && (
               <section className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-8 md:p-10 shadow-sm">
-
                 <div
                   aria-hidden="true"
                   className="pointer-events-none absolute -top-16 -right-16 w-64 h-64 rounded-full bg-[var(--accent)]/10 blur-3xl"
@@ -263,18 +266,25 @@ export default function DashboardPage() {
                   <p className="text-sm text-[var(--text-main)]/60">
                     No books added to your shelf yet.
                   </p>
-                  <Link
-                    href="/dashboard/books/new"
+                  <button
+                    type="button"
+                    onClick={() => setIsAddModalOpen(true)}
                     className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] shadow-sm hover:shadow-md transition-all"
                   >
-                    + Add your first book
-                  </Link>
+                    <Plus className="w-4 h-4" />
+                    <span>Add your first book</span>
+                  </button>
                 </div>
               )}
             </section>
           </div>
         )}
       </main>
+      <AddBookModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onBookAdded={handleBookAdded}
+      />
 
       <footer className="py-8 bg-[var(--text-main)]">
         <div className="max-w-6xl mx-auto px-6 md:px-10 flex flex-col items-center gap-2">
