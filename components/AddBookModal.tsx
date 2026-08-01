@@ -35,7 +35,8 @@ export default function AddBookModal({
     const tagArray = tags
       .split(",")
       .map((t) => t.trim())
-      .filter((t) => t.length > 0);
+      .filter((t) => t.length > 0)
+      .map((t) => t.toLowerCase());
 
     try {
       const res = await fetch("/api/books", {
