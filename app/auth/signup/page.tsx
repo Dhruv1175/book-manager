@@ -62,6 +62,7 @@ const SignupPage = () => {
 
   return (
     <div className="min-h-screen bg-[var(--bg)]">
+
       <div className="fixed top-0 left-0 right-0 z-10 h-20 border-b border-[var(--border)] bg-[var(--bg)]/90 backdrop-blur-xl">
         <div className="h-full flex items-center px-8 md:px-12">
           <Link href="/" className="text-lg font-bold tracking-tight text-[var(--text-main)]">
@@ -72,9 +73,9 @@ const SignupPage = () => {
       <div className="min-h-screen flex flex-col items-center justify-center px-6 py-32">
 
         <div className="w-full max-w-2xl rounded-2xl bg-[var(--bg-card)] border border-[var(--border)] shadow-[0_24px_60px_-16px_rgba(0,0,0,0.18)]">
-          <div className="px-10 py-14 sm:px-16 sm:py-16">
+          <div className="px-10 py-20 sm:px-16 sm:py-24">
 
-            <div className="mb-14 text-center">
+            <div className="mb-16 text-center">
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[var(--text-main)] mb-3">
                 Create your account
               </h1>
@@ -89,7 +90,7 @@ const SignupPage = () => {
               </div>
             )}
 
-            <form onSubmit={handleSignIn} className="space-y-10">
+            <form onSubmit={handleSignIn} className="space-y-12">
 
               <div className="flex flex-col items-center text-center">
                 <label className="block mb-4 text-xs font-semibold uppercase tracking-widest text-[var(--text-main)]/45">
@@ -97,6 +98,7 @@ const SignupPage = () => {
                 </label>
                 <AvatarSelector selectedAvatar={avatar} onSelect={setAvatar} />
               </div>
+
               <div>
                 <label htmlFor="name" className="block mb-2.5 text-xs font-semibold uppercase tracking-widest text-[var(--text-main)]/45">
                   Full Name
@@ -113,6 +115,7 @@ const SignupPage = () => {
                   className={inputClass}
                 />
               </div>
+
               <div>
                 <label htmlFor="email" className="block mb-2.5 text-xs font-semibold uppercase tracking-widest text-[var(--text-main)]/45">
                   Email
@@ -129,6 +132,7 @@ const SignupPage = () => {
                   className={inputClass}
                 />
               </div>
+
               <div>
                 <label htmlFor="password" className="block mb-2.5 text-xs font-semibold uppercase tracking-widest text-[var(--text-main)]/45">
                   Password
@@ -210,7 +214,7 @@ const SignupPage = () => {
               </button>
             </form>
 
-            <p className="mt-10 text-center text-sm text-[var(--text-main)]/60">
+            <p className="mt-14 text-center text-sm text-[var(--text-main)]/60">
               Already have an account?{" "}
               <Link href="/auth/login" className="font-semibold text-[var(--accent)] hover:underline transition-colors">
                 Sign in

@@ -84,68 +84,59 @@ export default function UserProfileDropdown() {
     }
   };
 
-  const currentAvatarObj = AVATAR_OPTIONS.find((a) => a.id === user?.avatar) || AVATAR_OPTIONS[0];
+  const currentAvatarObj =
+    AVATAR_OPTIONS.find((a) => a.id === user?.avatar) || AVATAR_OPTIONS[0];
 
   return (
     <div ref={dropdownRef} className="relative">
-      
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-[hsl(var(--surface-raised))] transition-colors outline-none"
+        className="flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-[var(--bg-card)] transition-colors outline-none"
       >
-        <div className="relative w-8 h-8 rounded-full overflow-hidden border border-[hsl(var(--border-token))] bg-[hsl(var(--surface-raised))]">
+        <div className="relative w-8 h-8 rounded-full overflow-hidden border border-[var(--border)] bg-[var(--bg-card)]">
           {loadingUser ? (
             <div className="w-full h-full flex items-center justify-center">
-              <Loader2 className="w-4 h-4 animate-spin text-[hsl(var(--foreground-tertiary))]" />
+              <Loader2 className="w-4 h-4 animate-spin text-[var(--text-main)]/40" />
             </div>
           ) : (
             <Image
               src={currentAvatarObj.url}
-              alt={user?.name || "User Avatar"}
+              alt={user?.name || "User avatar"}
               fill
               sizes="32px"
               className="object-cover"
             />
           )}
-          <span
-            className="absolute bottom-0 right-0 w-2 h-2 rounded-full border-2"
-            style={{
-              background: "hsl(var(--positive))",
-              borderColor: "hsl(var(--background))",
-            }}
-          />
+          <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full border-2 border-[var(--bg)] bg-emerald-500" />
         </div>
 
-        <span className="hidden sm:block text-sm font-medium max-w-[120px] truncate text-[hsl(var(--foreground))]">
+        <span className="hidden sm:block text-sm font-medium max-w-[120px] truncate text-[var(--text-main)]">
           {user ? `Hi, ${user.name.split(" ")[0]}` : "User"}
         </span>
 
         <ChevronDown
-          className="w-3.5 h-3.5 transition-transform text-[hsl(var(--foreground-tertiary))]"
-          style={{ transform: open ? "rotate(180deg)" : "rotate(0)" }}
+          className={`w-3.5 h-3.5 text-[var(--text-main)]/50 transition-transform duration-200 ${
+            open ? "rotate-180" : "rotate-0"
+          }`}
         />
       </button>
+
       {open && (
-        <div
-          className="absolute right-0 top-full mt-2 rounded-xl z-50 overflow-hidden shadow-2xl animate-fade-up"
-          style={{
-            width: "280px",
-            background: "hsl(var(--surface))",
-            border: "1px solid hsl(var(--border-token))",
-          }}
-        >
-          <div className="p-4 border-b border-[hsl(var(--border-token))]">
-            <p className="text-sm font-bold text-[hsl(var(--foreground))] truncate">
+        <div className="absolute right-0 top-full mt-2 w-72 rounded-2xl z-50 overflow-hidden shadow-[0_16px_40px_-12px_rgba(0,0,0,0.2)] bg-[var(--bg-card)] border border-[var(--border)]">
+
+          <div className="p-5 border-b border-[var(--border)]">
+            <p className="text-sm font-bold text-[var(--text-main)] truncate">
               {user?.name || "Guest User"}
             </p>
-            <p className="text-xs text-[hsl(var(--foreground-tertiary))] truncate">
+            <p className="text-xs text-[var(--text-main)]/50 truncate mt-0.5">
               {user?.email || "No email available"}
             </p>
           </div>
-          <div className="p-4 border-b border-[hsl(var(--border-token))]">
-            <p className="text-xs font-semibold mb-3 text-[hsl(var(--foreground-secondary))] uppercase tracking-wider">
-              Change Avatar {updatingAvatar && <Loader2 className="w-3 h-3 animate-spin inline ml-1" />}
+          <div className="p-5 border-b border-[var(--border)]">
+            <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-main)]/50 mb-3.5">
+              Change avatar
+              {updatingAvatar && <Loader2 className="w-3 h-3 animate-spin" />}
             </p>
 
             <div className="flex items-center justify-between gap-2">
@@ -158,9 +149,9 @@ export default function UserProfileDropdown() {
                     onClick={() => handleAvatarChange(opt.id)}
                     disabled={updatingAvatar}
                     title={opt.label}
-                    className={`relative w-11 h-11 rounded-full border-2 overflow-hidden transition-all duration-150 ${
+                    className={`relative w-11 h-11 rounded-full border-2 overflow-hidden transition-all duration-150 outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-card)] disabled:opacity-50 ${
                       isSelected
-                        ? "border-[hsl(var(--accent))] scale-105"
+                        ? "border-[var(--accent)] scale-105 shadow-sm"
                         : "border-transparent opacity-60 hover:opacity-100"
                     }`}
                   >
@@ -172,7 +163,7 @@ export default function UserProfileDropdown() {
                       className="object-cover"
                     />
                     {isSelected && (
-                      <span className="absolute bottom-0 right-0 bg-[hsl(var(--accent))] text-white p-0.5 rounded-full z-10">
+                      <span className="absolute -bottom-0.5 -right-0.5 bg-[var(--accent)] text-white p-0.5 rounded-full ring-2 ring-[var(--bg-card)] z-10">
                         <Check className="w-2.5 h-2.5" />
                       </span>
                     )}
@@ -181,19 +172,19 @@ export default function UserProfileDropdown() {
               })}
             </div>
           </div>
-          <div className="p-2">
+          <div className="p-2.5">
             <button
               type="button"
               onClick={handleSignOut}
               disabled={signOutLoading}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-lg transition-colors text-[hsl(var(--negative))] hover:bg-[hsl(var(--negative-dim))]"
+              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-semibold rounded-lg text-rose-600 hover:bg-rose-500/10 disabled:opacity-60 transition-colors"
             >
               {signOutLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin shrink-0" />
               ) : (
                 <LogOut className="w-4 h-4 shrink-0" />
               )}
-              Sign Out
+              Sign out
             </button>
           </div>
         </div>

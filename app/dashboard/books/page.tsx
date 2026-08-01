@@ -17,10 +17,11 @@ import {
   Trash2,
   Loader2,
   X,
-  Plus,
   Tag as TagIcon,
-  Filter,
 } from "lucide-react";
+
+const modalInputClass =
+  "w-full px-3.5 py-2.5 text-sm rounded-lg bg-white text-slate-900 placeholder:text-slate-400 border border-black/10 shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-all";
 
 export default function BooksPage() {
   const [books, setBooks] = useState<BookTypes[]>([]);
@@ -28,7 +29,7 @@ export default function BooksPage() {
 
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const [editingBook, setEditingBook] = useState<BookTypes | null>(null);
   const [editTitle, setEditTitle] = useState("");
@@ -56,14 +57,12 @@ export default function BooksPage() {
     fetchBooks();
   }, []);
 
-  
   const allTags = useMemo(() => {
     const tagsSet = new Set<string>();
     books.forEach((b) => b.tags?.forEach((t) => tagsSet.add(t)));
     return Array.from(tagsSet);
   }, [books]);
 
- 
   const stats = useMemo(() => {
     return {
       total: books.length,
@@ -73,7 +72,12 @@ export default function BooksPage() {
     };
   }, [books]);
 
- 
+  const toggleTag = (tag: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  };
+
   const filteredBooks = useMemo(() => {
     return books.filter((book) => {
       const matchesStatus =
@@ -81,14 +85,14 @@ export default function BooksPage() {
       const matchesSearch =
         book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         book.author.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesTag =
-        !selectedTag || (book.tags && book.tags.includes(selectedTag));
+      const matchesTags =
+        selectedTags.length === 0 ||
+        selectedTags.every((tag) => book.tags?.includes(tag));
 
-      return matchesStatus && matchesSearch && matchesTag;
+      return matchesStatus && matchesSearch && matchesTags;
     });
-  }, [books, selectedStatus, searchQuery, selectedTag]);
+  }, [books, selectedStatus, searchQuery, selectedTags]);
 
- 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to remove this book from your shelf?"))
       return;
@@ -118,6 +122,7 @@ export default function BooksPage() {
     setEditStatus(book.status);
     setEditTags(book.tags ? book.tags.join(", ") : "");
   };
+
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingBook) return;
@@ -159,18 +164,19 @@ export default function BooksPage() {
   const getStatusStyle = (status: Status) => {
     switch (status) {
       case "Completed":
-        return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+        return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
       case "Reading":
-        return "bg-amber-500/10 text-amber-500 border-amber-500/20";
+        return "bg-amber-500/10 text-amber-600 border-amber-500/20";
       case "Want to Read":
-        return "bg-blue-500/10 text-blue-500 border-blue-500/20";
+        return "bg-blue-500/10 text-blue-600 border-blue-500/20";
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg)] text-[var(--text-main)]">
+
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--border)] bg-[var(--bg)]/90 backdrop-blur-xl">
-        <div className="container mx-auto px-6 md:px-12 h-20 flex justify-between items-center">
+        <div className="max-w-6xl mx-auto px-6 md:px-10 h-20 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <Link
               href="/dashboard"
@@ -190,17 +196,15 @@ export default function BooksPage() {
           </div>
         </div>
       </nav>
-
-      <main className="flex-1 container mx-auto px-6 md:px-12 pt-28 pb-20 space-y-10">
-        <section className="space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Library Books</h1>
-              <p className="text-sm text-[var(--text-main)]/60 mt-1">
-                Manage, filter, and track your personal reading catalog.
-              </p>
-            </div>
+      <main className="flex-1 max-w-6xl w-full mx-auto px-6 md:px-10 pt-32 pb-24 flex flex-col gap-10">
+        <section className="flex flex-col gap-6">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Library Books</h1>
+            <p className="text-sm text-[var(--text-main)]/60 mt-1.5">
+              Manage, filter, and track your personal reading catalog.
+            </p>
           </div>
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] flex items-center gap-3">
               <div className="p-2.5 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)]">
@@ -213,7 +217,7 @@ export default function BooksPage() {
             </div>
 
             <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] flex items-center gap-3">
-              <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-500">
+              <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-600">
                 <BookOpen className="w-5 h-5" />
               </div>
               <div>
@@ -223,7 +227,7 @@ export default function BooksPage() {
             </div>
 
             <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] flex items-center gap-3">
-              <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-500">
+              <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-600">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div>
@@ -233,7 +237,7 @@ export default function BooksPage() {
             </div>
 
             <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] flex items-center gap-3">
-              <div className="p-2.5 rounded-lg bg-blue-500/10 text-blue-500">
+              <div className="p-2.5 rounded-lg bg-blue-500/10 text-blue-600">
                 <Bookmark className="w-5 h-5" />
               </div>
               <div>
@@ -243,7 +247,7 @@ export default function BooksPage() {
             </div>
           </div>
         </section>
-        <section className="space-y-4">
+        <section className="flex flex-col gap-4">
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 bg-[var(--bg-card)] p-4 rounded-2xl border border-[var(--border)]">
             <div className="flex items-center gap-1.5 overflow-x-auto pb-2 lg:pb-0 scrollbar-none">
               {["All", "Reading", "Completed", "Want to Read"].map((status) => (
@@ -261,6 +265,7 @@ export default function BooksPage() {
                 </button>
               ))}
             </div>
+
             <div className="relative flex-1 max-w-md">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-main)]/40" />
               <input
@@ -268,13 +273,13 @@ export default function BooksPage() {
                 placeholder="Search by title or author..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-[var(--border)] bg-[var(--bg)] focus:outline-none focus:border-[var(--accent)] transition-colors"
+                className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl bg-[var(--bg)] text-[var(--text-main)] placeholder:text-slate-400 border border-black/10 shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-all"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-main)]/40 hover:text-[var(--text-main)]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -282,114 +287,115 @@ export default function BooksPage() {
             </div>
           </div>
           {allTags.length > 0 && (
-            <div className="flex items-center gap-2 flex-wrap text-xs pt-1">
-              <span className="flex items-center gap-1 text-[var(--text-main)]/50 font-medium mr-1">
+            <div className="flex items-start gap-2 flex-wrap text-xs">
+              <span className="flex items-center gap-1.5 text-[var(--text-main)]/50 font-medium mr-1 h-7">
                 <TagIcon className="w-3.5 h-3.5" /> Tags:
               </span>
-              {selectedTag && (
+
+              {allTags.map((tag) => {
+                const isActive = selectedTags.includes(tag);
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => toggleTag(tag)}
+                    aria-pressed={isActive}
+                    className={`px-2.5 py-1 rounded-md border font-mono transition-all ${
+                      isActive
+                        ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)] font-semibold"
+                        : "border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-main)]/60 hover:text-[var(--text-main)]"
+                    }`}
+                  >
+                    #{tag}
+                  </button>
+                );
+              })}
+
+              {selectedTags.length > 0 && (
                 <button
                   type="button"
-                  onClick={() => setSelectedTag(null)}
-                  className="px-2.5 py-1 rounded-md bg-rose-500/10 text-rose-500 font-semibold flex items-center gap-1"
+                  onClick={() => setSelectedTags([])}
+                  className="px-2.5 py-1 rounded-md bg-rose-500/10 text-rose-600 font-semibold flex items-center gap-1"
                 >
-                  Clear Tag Filter <X className="w-3 h-3" />
+                  Clear {selectedTags.length} tag{selectedTags.length > 1 ? "s" : ""}
+                  <X className="w-3 h-3" />
                 </button>
               )}
-              {allTags.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() =>
-                    setSelectedTag(selectedTag === tag ? null : tag)
-                  }
-                  className={`px-2.5 py-1 rounded-md border font-mono transition-all ${
-                    selectedTag === tag
-                      ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)] font-semibold"
-                      : "border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-main)]/60 hover:text-[var(--text-main)]"
-                  }`}
-                >
-                  #{tag}
-                </button>
-              ))}
             </div>
           )}
         </section>
         <section>
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 text-[var(--text-main)]/50 gap-3">
-              <Loader2 className="w-8 h-8 animate-spin" />
-              <p className="text-sm font-medium">Fetching your library...</p>
+            <div className="flex flex-col items-center justify-center py-24 text-[var(--text-main)]/50 gap-3">
+              <Loader2 className="w-7 h-7 animate-spin" />
+              <p className="text-sm font-medium">Fetching your library…</p>
             </div>
           ) : filteredBooks.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredBooks.map((book) => (
                 <div
                   key={book._id}
-                  className="group relative flex gap-4 p-5 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] hover:border-[var(--accent)]/50 transition-all shadow-sm hover:shadow-md"
+                  className="group relative flex flex-col rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-[var(--accent)]/40 transition-all duration-300"
                 >
-                  <div className="relative w-28 h-40 shrink-0 rounded-lg overflow-hidden bg-[var(--bg)] border border-[var(--border)] shadow-inner">
+                  <div className="relative w-full aspect-[3/4] bg-[var(--bg)] overflow-hidden">
                     {book.coverUrl ? (
                       <Image
                         src={book.coverUrl}
                         alt={book.title}
                         fill
-                        sizes="112px"
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                        className="object-cover group-hover:scale-[1.04] transition-transform duration-500"
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-2 text-center text-[var(--text-main)]/30">
-                        <BookOpen className="w-8 h-8 mb-1" />
-                        <span className="text-[10px] font-medium leading-tight line-clamp-3">
+                      <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center text-[var(--text-main)]/25 gap-2">
+                        <BookOpen className="w-10 h-10" />
+                        <span className="text-xs font-semibold leading-tight line-clamp-3">
                           {book.title}
                         </span>
                       </div>
                     )}
-                  </div>
-                  <div className="flex flex-col justify-between flex-1 py-0.5 min-w-0">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between gap-1">
-                        <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border ${getStatusStyle(
-                            book.status
-                          )}`}
-                        >
-                          {book.status}
-                        </span>
-                        <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                          <button
-                            type="button"
-                            onClick={() => openEditModal(book)}
-                            title="Edit Book"
-                            className="p-1 rounded hover:bg-[var(--bg)] text-[var(--text-main)]/60 hover:text-[var(--accent)] transition-colors"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(book._id)}
-                            disabled={deletingId === book._id}
-                            title="Delete Book"
-                            className="p-1 rounded hover:bg-[var(--bg)] text-[var(--text-main)]/60 hover:text-rose-500 transition-colors"
-                          >
-                            {deletingId === book._id ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              <Trash2 className="w-3.5 h-3.5" />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-
-                      <div>
-                        <h3 className="font-bold text-base text-[var(--text-main)] line-clamp-2 leading-snug">
-                          {book.title}
-                        </h3>
-                        <p className="text-xs text-[var(--text-main)]/60 line-clamp-1 mt-0.5">
-                          by {book.author}
-                        </p>
-                      </div>
+                    <span
+                      className={`absolute top-3 left-3 text-[10px] font-semibold px-2.5 py-1 rounded-full border backdrop-blur-md ${getStatusStyle(
+                        book.status
+                      )}`}
+                    >
+                      {book.status}
+                    </span>
+                    <div className="absolute top-3 right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(book)}
+                        title="Edit book"
+                        className="p-1.5 rounded-lg bg-[var(--bg-card)]/90 backdrop-blur-md text-[var(--text-main)]/70 hover:text-[var(--accent)] shadow-sm transition-colors"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(book._id)}
+                        disabled={deletingId === book._id}
+                        title="Delete book"
+                        className="p-1.5 rounded-lg bg-[var(--bg-card)]/90 backdrop-blur-md text-[var(--text-main)]/70 hover:text-rose-600 shadow-sm transition-colors"
+                      >
+                        {deletingId === book._id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-3.5 h-3.5" />
+                        )}
+                      </button>
                     </div>
-                    <div className="space-y-2 mt-3 pt-2 border-t border-[var(--border)]/60">
+                  </div>
+                  <div className="flex flex-col flex-1 gap-2.5 p-4">
+                    <div>
+                      <h3 className="font-bold text-[15px] text-[var(--text-main)] line-clamp-2 leading-snug group-hover:text-[var(--accent)] transition-colors">
+                        {book.title}
+                      </h3>
+                      <p className="text-xs text-[var(--text-main)]/60 line-clamp-1 mt-0.5">
+                        by {book.author}
+                      </p>
+                    </div>
+
+                    <div className="mt-auto flex flex-col gap-2 pt-2 border-t border-[var(--border)]/60">
                       {book.tags && book.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1">
                           {book.tags.map((tag, idx) => (
@@ -402,9 +408,8 @@ export default function BooksPage() {
                           ))}
                         </div>
                       )}
-
                       <p className="text-[10px] text-[var(--text-main)]/40 font-mono">
-                        Added: {new Date(book.createdAt).toLocaleDateString()}
+                        Added {new Date(book.createdAt).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
@@ -423,35 +428,35 @@ export default function BooksPage() {
         </section>
       </main>
       {editingBook && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
-              <h3 className="font-bold text-lg">Edit Book Details</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--border)]">
+              <h3 className="font-bold text-lg">Edit book details</h3>
               <button
                 type="button"
                 onClick={() => setEditingBook(null)}
-                className="p-1 rounded-lg text-[var(--text-main)]/50 hover:text-[var(--text-main)] hover:bg-[var(--bg)]"
+                className="p-1.5 rounded-lg text-[var(--text-main)]/50 hover:text-[var(--text-main)] hover:bg-[var(--bg)] transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleUpdate} className="space-y-4">
+            <form onSubmit={handleUpdate} className="p-6 space-y-5">
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-main)]/60 mb-1">
-                  Book Title
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-main)]/50 mb-2">
+                  Book title
                 </label>
                 <input
                   type="text"
                   required
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-[var(--border)] bg-[var(--bg)] focus:outline-none focus:border-[var(--accent)]"
+                  className={modalInputClass}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-main)]/60 mb-1">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-main)]/50 mb-2">
                   Author
                 </label>
                 <input
@@ -459,18 +464,18 @@ export default function BooksPage() {
                   required
                   value={editAuthor}
                   onChange={(e) => setEditAuthor(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-[var(--border)] bg-[var(--bg)] focus:outline-none focus:border-[var(--accent)]"
+                  className={modalInputClass}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-main)]/60 mb-1">
-                  Reading Status
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-main)]/50 mb-2">
+                  Reading status
                 </label>
                 <select
                   value={editStatus}
                   onChange={(e) => setEditStatus(e.target.value as Status)}
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-[var(--border)] bg-[var(--bg)] focus:outline-none focus:border-[var(--accent)]"
+                  className={modalInputClass}
                 >
                   <option value="Want to Read">Want to Read</option>
                   <option value="Reading">Reading</option>
@@ -479,7 +484,7 @@ export default function BooksPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-main)]/60 mb-1">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-main)]/50 mb-2">
                   Tags (comma separated)
                 </label>
                 <input
@@ -487,35 +492,35 @@ export default function BooksPage() {
                   value={editTags}
                   placeholder="Fiction, Sci-Fi, Favorites"
                   onChange={(e) => setEditTags(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-[var(--border)] bg-[var(--bg)] focus:outline-none focus:border-[var(--accent)]"
+                  className={modalInputClass}
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-[var(--border)]">
+              <div className="flex justify-end gap-2 pt-4 border-t border-[var(--border)]">
                 <button
                   type="button"
                   onClick={() => setEditingBook(null)}
-                  className="px-4 py-2 text-xs font-semibold rounded-lg border border-[var(--border)] hover:bg-[var(--bg)] transition-colors"
+                  className="px-4 py-2.5 text-sm font-semibold rounded-lg border border-[var(--border)] hover:bg-[var(--bg)] transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isUpdating}
-                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] flex items-center gap-1.5"
+                  className="px-4 py-2.5 text-sm font-semibold rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] shadow-sm hover:shadow-md disabled:opacity-60 flex items-center gap-1.5 transition-all"
                 >
                   {isUpdating && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  Save Changes
+                  Save changes
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-      <footer className="py-8 bg-[var(--text-main)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-        <div className="container mx-auto px-6 md:px-12 flex flex-col items-center gap-2">
+      <footer className="py-8 bg-[var(--text-main)]">
+        <div className="max-w-6xl mx-auto px-6 md:px-10 flex flex-col items-center gap-2">
           <div className="text-sm text-[var(--bg)]/60">
-            &copy; {new Date().getFullYear()} WordMark. All rights reserved.
+            &copy; {new Date().getFullYear()} WordMark. All rights reserved. Avatar Icons by <a href="https://www.flaticon.com/free-icons/avatar" title="avatar icons">Flat Icons</a>
           </div>
         </div>
       </footer>

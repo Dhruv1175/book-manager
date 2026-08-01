@@ -124,7 +124,7 @@ export default function Home() {
       <footer className="py-10 bg-[var(--text-main)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
         <div className="container mx-auto px-6 md:px-12 flex flex-col items-center gap-2">
           <div className="text-sm text-[var(--bg)]/60">
-            &copy; {new Date().getFullYear()} WordMark. All rights reserved.
+            &copy; {new Date().getFullYear()} WordMark. All rights reserved. Avatar Icons by <a href="https://www.flaticon.com/free-icons/avatar" title="avatar icons">Flat Icons</a>
           </div>
         </div>
       </footer>
